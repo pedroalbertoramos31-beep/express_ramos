@@ -7,14 +7,14 @@ app.get('/', (req, res) => {
   res.send('API funcionando');
 });
 
-app.get('/usuario', (req, res) => {
-  const usuario = {
-    id: 1,
-    nombre: 'Juan',
-    rol: 'Administrador'
-  };
-
-  res.json(usuario);
+app.get('/alumnos', async (req, res) => {
+  try {
+    const resultado = await pool.query('SELECT * FROM alumno');
+    res.json(resultado.rows);
+  } catch (error) {
+    console.error('Error al consultar alumnos:', error);
+    res.status(500).json({ error: 'Error al obtener los alumnos' });
+  }
 });
 
 pool.connect()
