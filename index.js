@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const pool = require('./db_connection');
-
+app.use(express.json());
 
 app.get('/', (req, res) => {
   res.send('API funcionando');
@@ -14,6 +14,29 @@ app.get('/alumnos', async (req, res) => {
   } catch (error) {
     console.error('Error al consultar alumnos:', error);
     res.status(500).json({ error: 'Error al obtener los alumnos' });
+  }
+});
+
+app.post('/alumnos', async (req, res) => {
+  try {
+    const { nombre, apellido, edad, correo } = req.body;
+
+    if (!nombre || !apellido || !edad || !correo) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+
+    const resultado = await pool.query(
+      'INSERT INTO alumno (nombre, apellido, edad, correo) VALUES ($1, $2, $3, $4) RETURNING *',
+      [nombre, apellido, edad, correo]
+    );
+
+    res.status(201).json({
+      mensaje: 'Alumno insertado correctamente',
+      alumno: resultado.rows[0]
+    });
+  } catch (error) {
+    console.error('Error al insertar alumno:', error);
+    res.status(500).json({ error: 'Error al insertar el alumno' });
   }
 });
 
