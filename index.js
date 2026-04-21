@@ -40,6 +40,40 @@ app.post('/alumnos', async (req, res) => {
   }
 });
 
+app.get('/materia', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM materia');
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener materias' });
+  }
+});
+
+app.post('/materia', async (req, res) => {
+  try {
+    const { nombre, semestre, creditos } = req.body;
+
+    if (!nombre || !semestre || !creditos) {
+      return res.status(400).json({ error: 'Faltan datos requeridos' });
+    }
+
+    const result = await pool.query(
+      'INSERT INTO materia (nombre, semestre, creditos) VALUES ($1, $2, $3) RETURNING *',
+      [nombre, semestre, creditos]
+    );
+
+    res.status(201).json({
+      mensaje: 'Materia creada',
+      materia: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al insertar materia' });
+  }
+});
+
 pool.connect()
   .then(() => {
     console.log('Conexión exitosa a PostgreSQL');
